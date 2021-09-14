@@ -1,0 +1,45 @@
+pipeline:
+    name: AJ Pipe
+    identifier: AJ_Pipe
+    projectIdentifier: dansapp
+    orgIdentifier: default
+    tags: {}
+    properties:
+        ci:
+            codebase:
+                connectorRef: dhpupgithub
+                repoName: babbys
+                build: <+input>
+    stages:
+        - stage:
+              name: Build and Push
+              identifier: Build_and_Push
+              description: ""
+              type: CI
+              spec:
+                  cloneCodebase: true
+                  infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                          connectorRef: demoenv
+                          namespace: buildns
+                  serviceDependencies:
+                      - identifier: Python
+                        name: Python
+                        type: Service
+                        spec:
+                            connectorRef: dhdocker2
+                            image: python:3.8-slim-buster
+                  execution:
+                      steps:
+                          - step:
+                                type: BuildAndPushDockerRegistry
+                                name: bp-nggit
+                                identifier: bpnggit
+                                spec:
+                                    connectorRef: dhdocker2
+                                    repo: babbys
+                                    tags:
+                                        - <+pipeline>
+                                    optimize: true
+              variables: []
