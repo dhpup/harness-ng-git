@@ -1,0 +1,15 @@
+connector:
+  name: dhdocker2
+  identifier: dhdocker2
+  description:
+  orgIdentifier: default
+  projectIdentifier: dansapp
+  type: DockerRegistry
+  spec:
+    dockerRegistryUrl: https://registry.hub.docker.com/v2/
+    providerType: DockerHub
+    auth:
+      type: UsernamePassword
+      spec:
+        username: dhpup
+        passwordRef: dhdockerpw
