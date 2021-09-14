@@ -1,0 +1,106 @@
+pipeline:
+    name: End to End
+    identifier: End_to_End
+    projectIdentifier: dansapp
+    orgIdentifier: default
+    tags: {}
+    properties:
+        ci:
+            codebase:
+                connectorRef: dhpupgithub
+                repoName: flask-realworld
+                build: <+input>
+    stages:
+        - stage:
+              name: Build
+              identifier: Build
+              description: ""
+              type: CI
+              spec:
+                  cloneCodebase: true
+                  infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                          connectorRef: demoenv
+                          namespace: buildns
+                  serviceDependencies:
+                      - identifier: python
+                        name: python
+                        type: Service
+                        spec:
+                            connectorRef: dhdocker
+                            image: python:3.8-slim-buster
+                  execution:
+                      steps:
+                          - step:
+                                type: BuildAndPushDockerRegistry
+                                name: dhdocker
+                                identifier: dhdocker
+                                spec:
+                                    connectorRef: dhdocker
+                                    repo: dhpup/demoenvrepo
+                                    tags: <+input>
+                                    optimize: true
+              variables: []
+        - stage:
+              name: Deploy
+              identifier: Deploy
+              description: ""
+              type: Deployment
+              spec:
+                  serviceConfig:
+                      serviceRef: Flask_App
+                      serviceDefinition:
+                          type: Kubernetes
+                          spec:
+                              variables: []
+                              manifests:
+                                  - manifest:
+                                        identifier: realworld
+                                        type: HelmChart
+                                        spec:
+                                            store:
+                                                type: Github
+                                                spec:
+                                                    connectorRef: dhpupgithub
+                                                    gitFetchType: Branch
+                                                    folderPath: realworld
+                                                    repoName: flask-realworld
+                                                    branch: main
+                                            skipResourceVersioning: false
+                                            helmVersion: V2
+                              artifacts:
+                                  primary:
+                                      type: DockerRegistry
+                                      spec:
+                                          connectorRef: dhdocker
+                                          imagePath: dhpup/demoenvrepo
+                                          tag: <+input>
+                  infrastructure:
+                      environmentRef: sandbox
+                      infrastructureDefinition:
+                          type: KubernetesDirect
+                          spec:
+                              connectorRef: demoenv
+                              namespace: demoapp
+                              releaseName: release-<+INFRA_KEY>
+                      allowSimultaneousDeployments: false
+                  execution:
+                      steps:
+                          - step:
+                                type: K8sRollingDeploy
+                                name: Rolling Deployment
+                                identifier: Rolling_Deployment
+                                spec:
+                                    skipDryRun: false
+                                timeout: 10m
+                                failureStrategies: []
+                      rollbackSteps: []
+                  serviceDependencies: []
+              tags: {}
+              failureStrategies:
+                  - onFailure:
+                        errors:
+                            - AllErrors
+                        action:
+                            type: StageRollback
