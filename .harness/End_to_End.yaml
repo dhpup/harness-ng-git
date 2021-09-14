@@ -73,7 +73,7 @@ pipeline:
                                   primary:
                                       type: DockerRegistry
                                       spec:
-                                          connectorRef: dhdocker
+                                          connectorRef: dhdocker2
                                           imagePath: dhpup/demoenvrepo
                                           tag: <+input>
                   infrastructure:
