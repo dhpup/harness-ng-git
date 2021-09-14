@@ -95,6 +95,21 @@ pipeline:
                                     skipDryRun: false
                                 timeout: 10m
                                 failureStrategies: []
+                          - step:
+                                type: ShellScript
+                                name: Hi
+                                identifier: Hi
+                                spec:
+                                    shell: Bash
+                                    onDelegate: true
+                                    source:
+                                        type: Inline
+                                        spec:
+                                            script: echo hello
+                                    environmentVariables: []
+                                    outputVariables: []
+                                    executionTarget: {}
+                                timeout: 10m
                       rollbackSteps: []
                   serviceDependencies: []
               tags: {}
