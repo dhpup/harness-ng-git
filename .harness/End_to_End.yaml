@@ -84,7 +84,7 @@ pipeline:
                               connectorRef: demoenv
                               namespace: demoapp
                               releaseName: release-<+INFRA_KEY>
-                      allowSimultaneousDeployments: false
+                      allowSimultaneousDeployments: true
                   execution:
                       steps:
                           - step:
